@@ -19,15 +19,6 @@ This project helps you organize, plan, and discover meals with ease.
    ```bash
    cd evys-mealguide
    ```
-3. **Install dependencies and run the project** as per your stack (see below).
-
-## Technologies Used
-
-- [List your main technologies here, e.g., Python, JavaScript, React, etc.]
-
-## Contributing
-
-Contributions are welcome! Please open an issue or submit a pull request.
 
 ## License
 
