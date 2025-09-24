@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Personal Wellness Plan</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;7-00&display=swap" rel="stylesheet">
+    <style>
+        html.dark {
+            color-scheme: dark;
+        }
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: #F7F9F5;
+            color: #43524B;
+            background-image: url('data:image/svg+xml,%3Csvg width="84" height="48" viewBox="0 0 84 48" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h12v6H0V0zm24 0h12v6H24V0zm24 0h12v6H48V0zm24 0h12v6H72V0zM12 12h12v6H12v-6zm24 0h12v6H36v-6zm24 0h12v6H60v-6zm24 0h12v6H84v-6zM0 24h12v6H0v-6zm24 0h12v6H24v-6zm24 0h12v6H48v-6zm24 0h12v6H72v-6zM12 36h12v6H12v-6zm24 0h12v6H36v-6zm24 0h12v6H60v-6zm24 0h12v6H84v-6z" fill="%23A1B5A9" fill-opacity="0.08" fill-rule="evenodd"/%3E%3C/svg%3E');
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        .dark body {
+            background-color: #2D3748;
+            color: #A0AEC0;
+            background-image: url('data:image/svg+xml,%3Csvg width="84" height="48" viewBox="0 0 84 48" xmlns="http://www.w3.org/2000/svg"%3E%3Cpath d="M0 0h12v6H0V0zm24 0h12v6H24V0zm24 0h12v6H48V0zm24 0h12v6H72V0zM12 12h12v6H12v-6zm24 0h12v6H36v-6zm24 0h12v6H60v-6zm24 0h12v6H84v-6zM0 24h12v6H0v-6zm24 0h12v6H24v-6zm24 0h12v6H48v-6zm24 0h12v6H72v-6zM12 36h12v6H12v-6zm24 0h12v6H36v-6zm24 0h12v6H60v-6zm24 0h12v6H84v-6z" fill="%234A5568" fill-opacity="0.1" fill-rule="evenodd"/%3E%3C/svg%3E');
+        }
+        .gemini-button:hover, .swap-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #6B8A7A;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        .dark .loader { border-top-color: #9AE6B4; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .week-tab { border-bottom: 3px solid transparent; }
+        .week-tab.active {
+            border-bottom-color: #6B8A7A;
+            font-weight: 700;
+            color: #3A4F41;
+        }
+        .dark .week-tab.active { border-bottom-color: #9AE6B4; color: #EDF2F7; }
+        .day-card {
+             background-color: rgba(255, 255, 255, 0.85);
+             backdrop-filter: blur(10px);
+             border: 1px solid #E0EAE4;
+        }
+        .dark .day-card { background-color: rgba(45, 55, 72, 0.7); border-color: #4A5568; }
+    </style>
+</head>
+<body>
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <div id="instruction-banner" class="bg-[#e8f0e9] dark:bg-gray-700 text-xs text-[#3A4F41] dark:text-gray-300 p-3 rounded-md mb-6 shadow-sm relative transition-colors duration-300">
+            <button onclick="document.getElementById('instruction-banner').style.display='none'" class="absolute top-1 right-2 font-bold text-lg">&times;</button>
+            <strong>Tip:</strong> You can save this file to your phone's home screen for easy daily access. In your browser, find 'Share' or 'Options' and select 'Add to Home Screen'.
+        </div>
+
+        <header class="text-center mb-8 relative">
+            <h1 class="text-3xl md:text-4xl font-bold text-[#3A4F41] dark:text-gray-200">Your 30-Day Wellness Plan</h1>
+            <p class="mt-2 text-gray-500 dark:text-gray-400 max-w-2xl mx-auto">A simple, beautiful guide for the season ahead, designed just for you.</p>
+            <button onclick="getDailyFocus()" class="gemini-button mt-4 bg-white dark:bg-gray-700 border border-[#C5D3C9] dark:border-gray-600 text-[#3A4F41] dark:text-gray-200 font-bold py-2 px-6 rounded-full shadow-sm hover:bg-[#F0F5F1] dark:hover:bg-gray-600 transition-all duration-200">✨ Get My Daily Focus</button>
+            <button id="theme-toggle" class="absolute top-0 right-0 p-2 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6B8A7A] dark:focus:ring-offset-gray-800">
+                <svg id="theme-toggle-dark-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path></svg>
+                <svg id="theme-toggle-light-icon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.707.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zM1 11a1 1 0 100-2H0a1 1 0 100 2h1zM4.227 15.773a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414l.707.707z" fill-rule="evenodd" clip-rule="evenodd"></path></svg>
+            </button>
+        </header>
+
+        <div class="flex justify-center border-b border-gray-200 dark:border-gray-700 mb-8">
+            <div id="week1-tab" class="week-tab active cursor-pointer p-3" onclick="showWeek(1)">Week 1</div>
+            <div id="week2-tab" class="week-tab cursor-pointer p-3" onclick="showWeek(2)">Week 2</div>
+            <div id="week3-tab" class="week-tab cursor-pointer p-3" onclick="showWeek(3)">Week 3</div>
+            <div id="week4-tab" class="week-tab cursor-pointer p-3" onclick="showWeek(4)">Week 4</div>
+        </div>
+
+        <div id="weeks-container">
+            <!-- Week 1 -->
+            <div id="week1" class="week-container">
+                <div class="md:flex justify-between items-center mb-4">
+                    <h2 class="text-2xl font-bold text-[#556F62] dark:text-gray-300 mb-2 md:mb-0">Week 1: Fresh Beginnings</h2>
+                    <button onclick="generateShoppingList(this, 1)" class="gemini-button w-full md:w-auto bg-[#6B8A7A] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-[#556F62] dark:hover:bg-teal-600 transition-all duration-200">✨ Get Quick Trip List for Week 1</button>
+                </div>
+                <div class="bg-[#E8F0E9] dark:bg-gray-800 border-l-4 border-[#A1B5A9] dark:border-teal-500 text-[#43524B] dark:text-gray-300 p-4 rounded-md mb-6 shadow-sm">
+                    <p class="font-bold">Weekly Prep Focus:</p>
+                    <ul class="list-disc list-inside mt-2 text-sm">
+                        <li>Cook a large batch of rice.</li>
+                        <li>Bake or pan-fry 4-5 chicken breasts. Shred half.</li>
+                        <li>Hard-boil 6 eggs.</li>
+                        <li>Roast a tray of root vegetables (carrots, sweet potatoes).</li>
+                    </ul>
+                </div>
+                 <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+                    <!-- Cards will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Weeks 2, 3, 4 -->
+            <div id="week2" class="week-container hidden">
+                <div class="md:flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-[#556F62] dark:text-gray-300 mb-2 md:mb-0">Week 2: Cozy & Consistent</h2><button onclick="generateShoppingList(this, 2)" class="gemini-button w-full md:w-auto bg-[#6B8A7A] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-[#556F62] dark:hover:bg-teal-600 transition-all duration-200">✨ Get Quick Trip List for Week 2</button></div>
+                <div class="bg-[#E8F0E9] dark:bg-gray-800 border-l-4 border-[#A1B5A9] dark:border-teal-500 text-[#43524B] dark:text-gray-300 p-4 rounded-md mb-6 shadow-sm"><p class="font-bold">Weekly Prep Focus:</p><ul class="list-disc list-inside mt-2 text-sm"><li>Cook a large batch of buckwheat.</li><li>Cook ground turkey with onions and garlic.</li><li>Hard-boil 6 eggs.</li><li>Make black bean soup for easy lunches.</li></ul></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4"></div>
+            </div>
+             <div id="week3" class="week-container hidden">
+                <div class="md:flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-[#556F62] dark:text-gray-300 mb-2 md:mb-0">Week 3: Finding Your Flow</h2><button onclick="generateShoppingList(this, 3)" class="gemini-button w-full md:w-auto bg-[#6B8A7A] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-[#556F62] dark:hover:bg-teal-600 transition-all duration-200">✨ Get Quick Trip List for Week 3</button></div>
+                 <div class="bg-[#E8F0E9] dark:bg-gray-800 border-l-4 border-[#A1B5A9] dark:border-teal-500 text-[#43524B] dark:text-gray-300 p-4 rounded-md mb-6 shadow-sm"><p class="font-bold">Weekly Prep Focus:</p><ul class="list-disc list-inside mt-2 text-sm"><li>Repeat Week 1 Prep. Consistency makes it easy!</li></ul></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4"></div>
+            </div>
+             <div id="week4" class="week-container hidden">
+                <div class="md:flex justify-between items-center mb-4"><h2 class="text-2xl font-bold text-[#556F62] dark:text-gray-300 mb-2 md:mb-0">Week 4: A New Lifestyle</h2><button onclick="generateShoppingList(this, 4)" class="gemini-button w-full md:w-auto bg-[#6B8A7A] text-white font-bold py-2 px-4 rounded-lg shadow-md hover:bg-[#556F62] dark:hover:bg-teal-600 transition-all duration-200">✨ Get Quick Trip List for Week 4</button></div>
+                 <div class="bg-[#E8F0E9] dark:bg-gray-800 border-l-4 border-[#A1B5A9] dark:border-teal-500 text-[#43524B] dark:text-gray-300 p-4 rounded-md mb-6 shadow-sm"><p class="font-bold">Weekly Prep Focus:</p><ul class="list-disc list-inside mt-2 text-sm"><li>Repeat Week 2 Prep. You've built a solid routine!</li></ul></div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4"></div>
+            </div>
+        </div>
+        
+        <footer class="text-center mt-12">
+            <p class="text-gray-500 dark:text-gray-400 italic">"Discipline is choosing between what you want now and what you want most."</p>
+        </footer>
+
+    </div>
+
+    <!-- Gemini Modal -->
+    <div id="gemini-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+        <div class="relative mx-auto p-6 border w-full md:max-w-xl shadow-lg rounded-2xl bg-white dark:bg-gray-800">
+            <div class="text-center">
+                <h3 class="text-xl leading-6 font-bold text-[#3A4F41] dark:text-gray-200 mb-4" id="gemini-modal-title">Your Result</h3>
+                <div class="mt-2 px-2 py-3 max-h-[60vh] overflow-y-auto">
+                    <div id="gemini-modal-loader" class="hidden mx-auto loader"></div>
+                    <div class="text-sm text-gray-600 dark:text-gray-300 text-left" id="gemini-modal-content" style="line-height: 1.7;"></div>
+                </div>
+                <div class="items-center px-4 py-3">
+                    <button id="close-modal-btn" class="px-4 py-2 bg-[#6B8A7A] text-white text-base font-medium rounded-md w-full shadow-sm hover:bg-[#556F62] focus:outline-none focus:ring-2 focus:ring-[#A1B5A9] dark:bg-teal-600 dark:hover:bg-teal-500">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CORE DATA & SETUP ---
+        const mealsWeek1 = [
+            { breakfast: "2 Hard-boiled eggs, sliced, with a pinch of salt.", lunch: "Tuna Salad (1 can) with 2 rice cakes & cucumber slices.", dinner: "Chicken Breast (130g), 1/2 cup Rice, 1 cup Roasted Carrots.", snack: "Apple with 1 tbsp peanut butter.", macros: "~1380 Cal | 110g P | 140g C | 46g F" },
+            { breakfast: "High-Protein Chia Pudding.", lunch: "Leftover Chicken, Rice, and Carrots.", dinner: "Hearty Lentil & Turkey Bowl.", snack: "2 Hard-boiled eggs.", macros: "~1390 Cal | 108g P | 150g C | 45g F" },
+            { breakfast: "2 Hard-boiled eggs on 1 slice of rye toast.", lunch: "Leftover Lentil & Turkey Bowl.", dinner: "Chicken Stir-fry (shredded chicken, frozen mixed veggies, 1/2 cup rice).", snack: "Dairy-free yogurt with berries.", macros: "~1370 Cal | 108g P | 155g C | 38g F" },
+            { breakfast: "High-Protein Chia Pudding.", lunch: "Leftover Chicken Stir-fry.", dinner: "Baked Cod (150g), roasted sweet potatoes, green beans.", snack: "Apple with 1 tbsp peanut butter.", macros: "~1390 Cal | 105g P | 155g C | 42g F" },
+            { breakfast: "2 Hard-boiled eggs.", lunch: "Leftover Cod and veggies.", dinner: "Crispy Tofu Bowl (pan-seared tofu, 1/2 cup rice, edamame, broccoli).", snack: "Handful of almonds (1/4 cup).", macros: "~1400 Cal | 105g P | 130g C | 55g F" },
+            { breakfast: "High-Protein Chia Pudding.", lunch: '"Upgraded Noodle Cup" + shredded chicken.', dinner: "Leftover Lentil & Turkey Bowl.", snack: "Orange.", macros: "~1360 Cal | 100g P | 165g C | 35g F" },
+            { breakfast: "2 Hard-boiled eggs.", lunch: "Leftover Tofu Bowl.", dinner: "Flexible Meal! Enjoy with family. Aim for the Plate Method.", snack: "Dairy-free yogurt with berries.", macros: "Macros will vary" }
+        ];
+
+        const mealsWeek2 = [
+            { breakfast: "High-Protein Chia Pudding.", lunch: "Black Bean Soup with 2 rice cakes.", dinner: "Ground Turkey (130g) with 1/2 cup Buckwheat and roasted broccoli.", snack: "Apple with 1 tbsp peanut butter.", macros: "~1420 Cal | 115g P | 155g C | 45g F" },
+            { breakfast: "2 Hard-boiled eggs.", lunch: "Leftover Turkey & Buckwheat Bowl.", dinner: "Sheet Pan Chicken Thighs (2 small) with Brussels sprouts and carrots.", snack: "Pear.", macros: "~1400 Cal | 110g P | 120g C | 56g F" },
+            { breakfast: "High-Protein Chia Pudding.", lunch: "Leftover Chicken Thighs and veggies.", dinner: "Savory Tofu Bowl (pan-seared tofu, 1/2 cup buckwheat, steamed green beans).", snack: "2 hard-boiled eggs.", macros: "~1390 Cal | 108g P | 135g C | 50g F" },
+            { breakfast: "2 Hard-boiled eggs on 1 slice rye toast.", lunch: "Black Bean Soup.", dinner: "Leftover Tofu & Buckwheat Bowl.", snack: "Apple with 1 tbsp peanut butter.", macros: "~1370 Cal | 100g P | 150g C | 45g F" },
+            { breakfast: "High-Protein Chia Pudding.", lunch: "Tuna Salad in a whole grain wrap with lettuce.", dinner: "Leftover Ground Turkey mix with roasted zucchini.", snack: "Handful of almonds.", macros: "~1410 Cal | 112g P | 125g C | 53g F" },
+            { breakfast: "2 Hard-boiled eggs.", lunch: "Black Bean Soup.", dinner: "Chicken Breast (130g), 1/2 cup rice, side salad.", snack: "Dairy-free yogurt with berries.", macros: "~1360 Cal | 110g P | 140g C | 40g F" },
+            { breakfast: "High-Protein Chia Pudding.", lunch: "Leftover Chicken and rice.", dinner: "Flexible Meal! Use up leftovers or enjoy your evening.", snack: "2 Hard-boiled eggs.", macros: "Macros will vary" }
+        ];
+
+        function createDayCard(date, mealData) {
+            return `
+                <div class="day-card rounded-lg shadow-sm p-4 flex flex-col h-full">
+                    <span class="font-bold text-lg">${date}</span>
+                    <div class="mt-4 space-y-3 text-sm flex-grow">
+                        <p><strong>🍳 Breakfast:</strong> <span class="meal-desc">${mealData.breakfast}</span></p>
+                        <p><strong>🥗 Lunch:</strong> <span class="meal-desc">${mealData.lunch}</span></p>
+                        <p><strong>🍲 Dinner:</strong> <span class="meal-desc">${mealData.dinner}</span><button onclick="getMealSwap(this)" class="swap-button text-xs ml-1 transition-transform duration-200 hover:scale-125">⇄</button></p>
+                        <p><strong>🍎 Snack:</strong> <span class="meal-desc">${mealData.snack}</span></p>
+                    </div>
+                    <div class="text-xs mt-4 pt-2 border-t font-semibold text-[#6B8A7A] dark:text-teal-400">${mealData.macros}</div>
+                </div>`;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const startDate = new Date();
+             startDate.setDate(25); // Set to Sept 25 for consistency
+             startDate.setMonth(8); // September is month 8 (0-indexed)
+
+            const grids = [
+                document.querySelector('#week1 .grid'),
+                document.querySelector('#week2 .grid'),
+                document.querySelector('#week3 .grid'),
+                document.querySelector('#week4 .grid')
+            ];
+
+            let dayCounter = 0;
+            for (let i = 0; i < 30; i++) {
+                const weekIndex = Math.floor(i / 7);
+                const dayIndex = i % 7;
+                
+                if (weekIndex >= 4) break; 
+
+                const currentDate = new Date(startDate);
+                currentDate.setDate(startDate.getDate() + i);
+                const dateString = currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+
+                let mealData;
+                if (weekIndex === 0 || weekIndex === 2) {
+                    mealData = mealsWeek1[dayIndex];
+                } else {
+                    mealData = mealsWeek2[dayIndex];
+                }
+                
+                if (grids[weekIndex] && mealData) {
+                    grids[weekIndex].innerHTML += createDayCard(dateString, mealData);
+                }
+            }
+            initTheme();
+        });
+
+        // --- UI & THEME ---
+        function showWeek(weekNum) {
+            document.querySelectorAll('.week-container').forEach(c => c.classList.add('hidden'));
+            document.querySelectorAll('.week-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('week' + weekNum).classList.remove('hidden');
+            document.getElementById('week' + weekNum + '-tab').classList.add('active');
+        }
+
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const darkIcon = document.getElementById('theme-toggle-dark-icon');
+        const lightIcon = document.getElementById('theme-toggle-light-icon');
+        
+        function initTheme() {
+            if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                darkIcon.classList.remove('hidden');
+            } else {
+                document.documentElement.classList.remove('dark');
+                lightIcon.classList.remove('hidden');
+            }
+        }
+        
+        themeToggleBtn.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            darkIcon.classList.toggle('hidden');
+            lightIcon.classList.toggle('hidden');
+            if (document.documentElement.classList.contains('dark')) {
+                localStorage.setItem('theme', 'dark');
+            } else {
+                localStorage.setItem('theme', 'light');
+            }
+        });
+
+        // --- GEMINI API LOGIC ---
+        const API_KEY = "";
+        const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${API_KEY}`;
+
+        async function callGeminiAPI(prompt, systemPrompt) {
+            const payload = { contents: [{ parts: [{ text: prompt }] }], systemInstruction: { parts: [{ text: systemPrompt }] } };
+            for (let i = 0; i < 3; i++) {
+                try {
+                    const response = await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+                    if (response.ok) {
+                        const result = await response.json();
+                        const candidate = result.candidates?.[0];
+                        if (candidate?.content?.parts?.[0]?.text) return candidate.content.parts[0].text;
+                    }
+                } catch (error) { console.error("Fetch error:", error); }
+                if (i < 2) await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+            }
+            return "Sorry, I couldn't get a response. Please try again later.";
+        }
+        
+        const modal = document.getElementById('gemini-modal'), modalTitle = document.getElementById('gemini-modal-title'), modalContent = document.getElementById('gemini-modal-content'), loader = document.getElementById('gemini-modal-loader'), closeModalBtn = document.getElementById('close-modal-btn');
+        closeModalBtn.onclick = () => modal.classList.add('hidden');
+        window.onclick = (e) => { if (e.target == modal) modal.classList.add('hidden'); };
+
+        function showModal(title) { modalTitle.innerText = title; modalContent.innerHTML = ''; loader.classList.remove('hidden'); modal.classList.remove('hidden'); }
+
+        function displayModalContent(content) {
+            let htmlContent = content.replace(/\*\*(.*?)\*\*/g, '<strong class="text-[#3A4F41] dark:text-teal-300">$1</strong>').replace(/^\* (.*$)/gm, '<li class="ml-4 list-disc">$1</li>').replace(/\n/g, '<br>');
+            modalContent.innerHTML = htmlContent;
+            loader.classList.add('hidden');
+        }
+
+        const dieticianPersona = "You are Dietician, an experienced dietician for a neurodivergent person with ADHD. You provide simple, encouraging advice. User dislikes scrambled eggs, salmon, cabbage, yogurt, oatmeal, and peppers. User likes hard-boiled eggs, tofu, buckwheat, lentils, and beans. Tone is warm and supportive.";
+        
+        async function getDailyFocus() {
+            showModal("Your Daily Focus");
+            const prompt = "Please generate a short, encouraging affirmation or a simple mindful focus for the day. It should be geared towards someone on a health journey who is neurodivergent, focusing on self-compassion, non-judgment, and celebrating small steps rather than perfection.";
+            const response = await callGeminiAPI(prompt, "You are a gentle and wise mindfulness coach.");
+            displayModalContent(response);
+        }
+
+        async function getMealSwap(button) {
+            const mealDescription = button.previousElementSibling.innerText;
+            showModal(`Swap for: ${mealDescription}`);
+            const prompt = `Suggest one simple dinner alternative to "${mealDescription}". It must have similar macros (high protein, moderate carb/fat) and use budget-friendly ingredients like chicken, tofu, lentils, or beans. The user dislikes salmon, cabbage, and peppers. The recipe must be ADHD-friendly with 3-4 very simple steps.`;
+            const response = await callGeminiAPI(prompt, dieticianPersona);
+            displayModalContent(response);
+        }
+
+        async function generateShoppingList(button, weekNumber) {
+            const weekContainer = document.getElementById('week' + weekNumber);
+            const mealElements = weekContainer.querySelectorAll('.meal-desc');
+            let mealsText = new Set(Array.from(mealElements).map(el => el.innerText));
+            showModal(`Quick Trip List for Week ${weekNumber}`);
+            const prompt = `Create a minimalist, budget-friendly "Quick Trip" grocery list for one person based on these meals. Consolidate ruthlessly. Assume staples like oil, salt, pepper are owned. Categorize for a fast shopping experience (Produce, Protein, Pantry). Meals:\n\n- ${Array.from(mealsText).join('\n- ')}`;
+            const response = await callGeminiAPI(prompt, "You create concise, organized grocery lists for quick, budget-friendly shopping trips.");
+            displayModalContent(response);
+        }
+    </script>
+</body>
+</html>
+
